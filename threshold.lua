@@ -91,41 +91,41 @@ local function otsuthreshold(img)
       totalPixels = totalPixels + 1
       return y, i, q
     end
-)
+  )
 
 
-weightSum = 0
-for i = 1, 256 do weightSum = weightSum + (i * hist[i]) end
-  
-backgroundSum = 0;
-weightBackground = 0;
-weightForeground = 0;
+  weightSum = 0
+  for i = 1, 256 do weightSum = weightSum + (i * hist[i]) end
+    
+  backgroundSum = 0;
+  weightBackground = 0;
+  weightForeground = 0;
 
-maxVariance = 0
-threshold = 0
+  maxVariance = 0
+  threshold = 0
 
-for i=1,256 do
-  weightBackground = weightBackground + hist[i]
-  
-  weightForeground = totalPixels - weightBackground
-  
-  backgroundSum = backgroundSum + (i * hist[i])
-  
-  meanBackground = backgroundSum/weightBackground
-  
-  meanForeground = (weightSum - backgroundSum) / weightForeground
-  
-  betweenClassVariance = weightBackground * weightForeground * (meanBackground - meanForeground) * (meanBackground - meanForeground)
-  
-  if(betweenClassVariance > maxVariance) then
-    maxVariance = betweenClassVariance
-    threshold = i
+  for i=1,256 do
+    weightBackground = weightBackground + hist[i]
+    
+    weightForeground = totalPixels - weightBackground
+    
+    backgroundSum = backgroundSum + (i * hist[i])
+    
+    meanBackground = backgroundSum/weightBackground
+    
+    meanForeground = (weightSum - backgroundSum) / weightForeground
+    
+    betweenClassVariance = weightBackground * weightForeground * (meanBackground - meanForeground)^2
+    
+    if(betweenClassVariance > maxVariance) then
+      maxVariance = betweenClassVariance
+      threshold = i
+    end
+    
   end
-  
-end
 
 
-img = il.YIQ2RGB(img)
+  img = il.YIQ2RGB(img)
 
   return img:mapPixels(function( r, g, b )
     local pixelValue = r * .30 + g * .59 + b * .11
@@ -139,60 +139,8 @@ img = il.YIQ2RGB(img)
       return pixelValue, pixelValue, pixelValue
     end
 )
-  --]]
+
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---[[
-for i = 1, 256 do histogram[i] = 
-
- local backgroundWeight = {}
- local foregroundWeight = {}
- local backgroundMean = {}
- local foregroundMean = {}
- local histSum = {}
- local weightSum = {}
- local backgroundSum = {}
- 
- histSum[0] = 0
-
-for i = 1, 255 do
-  
-  
-  histSum[i] = histSum[i] + hist[i-1] 
-
-  backgroundweight[i] = histSum[i] / 256
-  
-  backgroundSum[i] = histSum[i] * i
-  
-  backgroundMean[i] = backgroundSum[i] / histSum[i]
-  
-  
-  
-  
- foregroundweight = 0 end
- 
- for i = 1, 256 do
-    for j = 1, 256 do
-        if (j<i) then
-          backgroundweight[i] = 
- 
-
---]] 
-
-
 
 ------------------------------------
 -------- exported routines ---------
