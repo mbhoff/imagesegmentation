@@ -81,34 +81,118 @@ end
 
 local function otsuthreshold(img)
  
-  local histogram = {}
-  for i = 1, 256 do histogram[i] = 0 end
-  
+  img = il.RGB2YIQ(img)
+ 
+  local hist = {}
+  totalPixels = 0
+  for i = 1, 256 do hist[i] = 0 end
   img:mapPixels(function(y, i, q)
-      histogram[y+1] = histogram[y+1] + 1
+      hist[y+1] = hist[y+1] + 1
+      totalPixels = totalPixels + 1
       return y, i, q
     end
 )
 
 
---[[
- local backgroundweight = {}
- for i = 1, 256 do foregroundweight = 0 end
+weightSum = 0
+for i = 1, 256 do weightSum = weightSum + (i * hist[i]) end
+  
+backgroundSum = 0;
+weightBackground = 0;
+weightForeground = 0;
 
- local foregroundweight = {}
- for i = 1, 256 do foregroundweight = 0 end
+maxVariance = 0
+threshold = 0
+
+for i=1,256 do
+  weightBackground = weightBackground + hist[i]
+  
+  weightForeground = totalPixels - weightBackground
+  
+  backgroundSum = backgroundSum + (i * hist[i])
+  
+  meanBackground = backgroundSum/weightBackground
+  
+  meanForeground = (weightSum - backgroundSum) / weightForeground
+  
+  betweenClassVariance = weightBackground * weightForeground * (meanBackground - meanForeground) * (meanBackground - meanForeground)
+  
+  if(betweenClassVariance > maxVariance) then
+    maxVariance = betweenClassVariance
+    threshold = i
+  end
+  
+end
+
+
+img = il.YIQ2RGB(img)
+
+  return img:mapPixels(function( r, g, b )
+    local pixelValue = r * .30 + g * .59 + b * .11
+
+    
+      if pixelValue > threshold
+        then pixelValue = 255
+      else pixelValue = 0
+    end
+    
+      return pixelValue, pixelValue, pixelValue
+    end
+)
+  --]]
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+for i = 1, 256 do histogram[i] = 
+
+ local backgroundWeight = {}
+ local foregroundWeight = {}
+ local backgroundMean = {}
+ local foregroundMean = {}
+ local histSum = {}
+ local weightSum = {}
+ local backgroundSum = {}
+ 
+ histSum[0] = 0
+
+for i = 1, 255 do
+  
+  
+  histSum[i] = histSum[i] + hist[i-1] 
+
+  backgroundweight[i] = histSum[i] / 256
+  
+  backgroundSum[i] = histSum[i] * i
+  
+  backgroundMean[i] = backgroundSum[i] / histSum[i]
+  
+  
+  
+  
+ foregroundweight = 0 end
  
  for i = 1, 256 do
     for j = 1, 256 do
         if (j<i) then
           backgroundweight[i] = 
  
- --]]
- 
 
-  return img
+--]] 
 
-end
+
 
 ------------------------------------
 -------- exported routines ---------
