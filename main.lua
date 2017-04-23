@@ -14,6 +14,8 @@ local viz = require "visual"
 local il = require "il"
 
 local thr = require "threshold"
+local nb = require "segment"
+
 -----------
 -- menus --
 -----------
@@ -30,6 +32,22 @@ imageMenu("Histogram processes",
   {
     {"Display Histogram", il.showHistogram,
        {{name = "color model", type = "string", default = "yiq"}}},
+  }
+)
+
+
+imageMenu("Region Segmentation",
+  {
+      {"Grayscale IHS", il.grayscaleIHS},
+      {"Seedfill", nb.seedfill,
+        {{name = "Threshold", type = "number", displaytype = "slider", default = 35, min = 0, max = 255}}},
+      {"Stack-based Seedfill", nb.stack_seedfill,
+        {{name = "Threshold", type = "number", displaytype = "slider", default = 35, min = 0, max = 255}}},
+      {"Size filter", nb.sizefilter,
+        {{name = "Threshold", type = "number", displaytype = "slider", default = 35, min = 0, max = 255},
+        {name = "Size", type = "number", displaytype = "spin", default = 100, min = 0, max = 10000},
+        {name = "Filter color", type = "string", displaytype = "combo", choices = {"white", "black"}, default = "white"}}},
+     
   }
 )
 
