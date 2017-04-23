@@ -17,74 +17,65 @@ local function basicthreshold(img)
   
   img = il.RGB2YIQ(img)
   
-  local intensitysum = 0
+  local intensitySum = 0
   local count = 0
   
   --get global average pixel intensity
   for r = 0,img.height-1 do
       for c = 0,img.width-1 do
-        
-        intensitysum = intensitysum + img:at(r,c).y
+        intensitySum = intensitySum + img:at(r,c).y
         count = count + 1
       end
   end
   
+  local prevthreshold = -256
+  local currthreshold = math.floor(intensitySum/count)
   
-  local prevthreshold = -20
-  local currthreshold = math.floor(intensitysum/count)
-  
-
   while((currthreshold - prevthreshold) > 1) do
-  
-  local group1intensitysum = 0
-  local group2intensitysum = 0
-  local group1pixelcount = 0
-  local group2pixelcount = 0
-  
-  
-  for r = 0,img.height-1 do
-      for c = 0,img.width-1 do
-        if (img:at(r,c).y > currthreshold) then
-          group1intensitysum = group1intensitysum + img:at(r,c).y
-          group1pixelcount = group1pixelcount + 1
-        elseif (img:at(r,c).y <= currthreshold) then
-          group2intensitysum = group2intensitysum + img:at(r,c).y
-          group2pixelcount = group2pixelcount + 1
-        end
-      end
-  end
-  
-  local group1average = group1intensitysum/group1pixelcount
-  local group2average = group2intensitysum/group2pixelcount
-  prevthreshold = currthreshold
-  currthreshold = (group1average + group2average)/2
-  
-
-  img = il.YIQ2RGB(img)
-
-  return img:mapPixels(function( r, g, b )
-    local pixelValue = r * .30 + g * .59 + b * .11
-
     
-      if pixelValue > currthreshold
-        then pixelValue = 255
-      else pixelValue = 0
+    local group1intensitysum = 0
+    local group2intensitysum = 0
+    local group1pixelcount = 0
+    local group2pixelcount = 0
+    
+    for r = 0,img.height-1 do
+        for c = 0,img.width-1 do
+          if (img:at(r,c).y > currthreshold) then
+            group1intensitysum = group1intensitysum + img:at(r,c).y
+            group1pixelcount = group1pixelcount + 1
+          elseif (img:at(r,c).y <= currthreshold) then
+            group2intensitysum = group2intensitysum + img:at(r,c).y
+            group2pixelcount = group2pixelcount + 1
+          end
+        end
     end
     
-      return pixelValue, pixelValue, pixelValue
+    local group1average = group1intensitysum/group1pixelcount
+    local group2average = group2intensitysum/group2pixelcount
+    prevthreshold = currthreshold
+    currthreshold = (group1average + group2average)/2
+  end  
+
+    img = il.YIQ2RGB(img)
+    return img:mapPixels(function( r, g, b )
+      local pixelValue = r * .30 + g * .59 + b * .11
+        if pixelValue > currthreshold
+          then pixelValue = 255
+        else pixelValue = 0
+      end
+        return pixelValue, pixelValue, pixelValue
     end
 )
-  --]]
 end
-end
+
 
 
 local function otsuthreshold(img)
  
   img = il.RGB2YIQ(img)
- 
   local hist = {}
-  totalPixels = 0
+  local totalPixels = 0
+
   for i = 1, 256 do hist[i] = 0 end
   img:mapPixels(function(y, i, q)
       hist[y+1] = hist[y+1] + 1
@@ -93,29 +84,27 @@ local function otsuthreshold(img)
     end
   )
 
-
-  weightSum = 0
+  local weightSum = 0
   for i = 1, 256 do weightSum = weightSum + (i * hist[i]) end
-    
-  backgroundSum = 0;
-  weightBackground = 0;
-  weightForeground = 0;
-
-  maxVariance = 0
-  threshold = 0
+  
+  local backgroundSum = 0;
+  local backgroundWeight = 0;
+  local foregroundWeight = 0;
+  local maxVariance = 0
+  local threshold = 0
 
   for i=1,256 do
-    weightBackground = weightBackground + hist[i]
+    backgroundWeight = backgroundWeight + hist[i]
     
-    weightForeground = totalPixels - weightBackground
+    foregroundWeight = totalPixels - backgroundWeight
     
     backgroundSum = backgroundSum + (i * hist[i])
     
-    meanBackground = backgroundSum/weightBackground
+    local backgroundMean = backgroundSum/backgroundWeight
     
-    meanForeground = (weightSum - backgroundSum) / weightForeground
+    local foregroundMean = (weightSum - backgroundSum) / foregroundWeight
     
-    betweenClassVariance = weightBackground * weightForeground * (meanBackground - meanForeground)^2
+    local betweenClassVariance = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean)^2
     
     if(betweenClassVariance > maxVariance) then
       maxVariance = betweenClassVariance
@@ -124,13 +113,10 @@ local function otsuthreshold(img)
     
   end
 
-
   img = il.YIQ2RGB(img)
 
   return img:mapPixels(function( r, g, b )
-    local pixelValue = r * .30 + g * .59 + b * .11
-
-    
+    local pixelValue = r * .30 + g * .59 + b * .11 
       if pixelValue > threshold
         then pixelValue = 255
       else pixelValue = 0
@@ -138,7 +124,7 @@ local function otsuthreshold(img)
     
       return pixelValue, pixelValue, pixelValue
     end
-)
+  )
 
 end
 
