@@ -26,4 +26,11 @@ imageMenu("Auto Threshold Processes",
   }
 )
 
+imageMenu("Histogram processes",
+  {
+    {"Display Histogram", il.showHistogram,
+       {{name = "color model", type = "string", default = "yiq"}}},
+  }
+)
+
 start()

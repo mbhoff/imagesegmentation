@@ -76,6 +76,8 @@ local function otsuthreshold(img)
   local hist = {}
   local totalPixels = 0
 
+
+  -- make histogram
   for i = 1, 256 do hist[i] = 0 end
   img:mapPixels(function(y, i, q)
       hist[y+1] = hist[y+1] + 1
@@ -84,8 +86,10 @@ local function otsuthreshold(img)
     end
   )
 
-  local weightSum = 0
-  for i = 1, 256 do weightSum = weightSum + (i * hist[i]) end
+
+  -- compute global weight sum
+  local globalWeightSum = 0
+  for i = 1, 256 do globalWeightSum = globalWeightSum + (i * hist[i]) end
   
   local backgroundSum = 0;
   local backgroundWeight = 0;
@@ -93,17 +97,26 @@ local function otsuthreshold(img)
   local maxVariance = 0
   local threshold = 0
 
+
+  -- for every possible threshold
   for i=1,256 do
+    
+    -- get the background weight (the number of pixels in the background class)
     backgroundWeight = backgroundWeight + hist[i]
     
+    -- get the foreground weight (the number of pixels in the foreground class)
     foregroundWeight = totalPixels - backgroundWeight
     
+    -- sum (intensity value * frequency) in background class
     backgroundSum = backgroundSum + (i * hist[i])
     
+    -- get background mean by taking (background sum / number of pixels in background class)
     local backgroundMean = backgroundSum/backgroundWeight
     
-    local foregroundMean = (weightSum - backgroundSum) / foregroundWeight
+    -- get foreground mean by taking (foreground sum / number of pixels in foreground class)
+    local foregroundMean = (globalWeightSum - backgroundSum) / foregroundWeight
     
+    -- between class variance is product of the two weights and the squared difference between the means
     local betweenClassVariance = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean)^2
     
     if(betweenClassVariance > maxVariance) then
@@ -127,6 +140,8 @@ local function otsuthreshold(img)
   )
 
 end
+
+
 
 ------------------------------------
 -------- exported routines ---------
