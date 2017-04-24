@@ -15,7 +15,7 @@ local il = require "il"
 
 local thr = require "threshold"
 local nb = require "segment"
-local main = require "mainJake"
+local splitmerge = require "splitmerge"
 -----------
 -- menus --
 -----------
@@ -37,7 +37,7 @@ imageMenu("Histogram processes",
 
 viz.imageMenu("Split/Merge",
   {
-    {"Spilt and Merge", main.main,
+    {"Spilt and Merge", splitmerge.main,
     {{name = "variance", type = "number", displaytype = "slider", default = 10, min = 0, max = 100}}},
   }
 )
