@@ -16,15 +16,11 @@ local math = require "math"
 --[[
 Function: basicThreshold
 Author: Mark Buttenhoff
-This function does a basic global threshold on an image.
-It uses the average image intensity to split the image
-into foreground and background groups.
-Then it enters a loop that find the average of
-the pixels in each group respectively, and
-takes the average of those averages. This
-gives a threshold value. This threshold
-is re-calculated using the same steps,
-until the amount of change in the threshold
+This function performs a basic global threshold on an image.
+It initially uses the average image intensity to split the image into foreground and background groups,
+then enters a loop that find the average of the pixels in each group respectively,
+and lastly takes the average of those two group averages. This gives gives a threshold value, which
+is re-calculated by using the previous steps until the amount of change in the threshold
 is below a predefined parameter (I used 1).
 --]]
 local function basicthreshold(img)
@@ -97,15 +93,12 @@ Function: otsuthreshold
 Author: Mark Buttenhoff
 This function first makes a intensity histogram,
 then sums the weight of the intensities in the histogram.
-For every possible intensity in the image(1-256)
-We calculate the between class variance using the following
-equation.
+For every possible intensity in the image(1-256),
+we calculate the between class variance using the following equation:
 Background Weight * Foreground Weight * (Background mean - Foreground mean)^2
-The background weight and foreground weights are
-found by summing the values on the left and right
-of the threshold in the histogram respectively.
-The means for each class are calculated by taking
-(sum of intensity values in class * their frequencies / number of pixels in class),
+The background weight and foreground weights are found by summing the values on the left and right
+of the threshold in the histogram respectively. The means for each class are calculated by taking
+(sum of (intensity values in class * their frequencies) / number of pixels in class),
 Once we have the means and weights, we compute the between class variance
 for the current iteration, and save the threshold value on iterations
 where the between class variance is greater than the max between class variance.
