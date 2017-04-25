@@ -1,8 +1,11 @@
 --[[
+  Author: Chance Haka
   segment.lua
   
   This file holds the functions that implement scan-line seedfilling for 
   region-based segmentation of an image. 
+  All regions are created by comparing the gray-scale intensity of a seed pixel
+  to its neighborhood.
   Requires the LuaIP library for processing.
 --]]
 

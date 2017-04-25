@@ -1,11 +1,18 @@
 --[[
   * * * * main.lua * * * *
-Authors: Mark Buttenhoff, Dr. Weiss, Alex Iverson
+Authors: Mark Buttenhoff, Chance Haka, Jake Miller
 Class: CSC442/542 Digital Image Processing
 Date: Spring 2017
 Program Description:
-Contains functions for basic and otsu thresholding of images.
+This program implements region based thresholding methods along with
+automated thresholding ones.
 
+Using the LuaIP library, this program can modify images through
+thresholding, seedfilling, and a split/merge algorithm.
+The binary thresholding includes a basic approach as well as the Otsu method.
+Seedfilling implements both a recursive and stack-based scanline to fill every region in the image.
+Split/merge separates the image into blocks that represent a group of similar pixels. Then 
+adjacent regions can then be merged together based on their gray-scale intensities.
 --]]
 
 -- LuaIP image processing routines
