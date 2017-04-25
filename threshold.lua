@@ -1,9 +1,9 @@
 --[[
-  * * * * functions.lua * * * *
+  * * * * threshold.lua * * * *
   
-This file contains the following kirsch edge detection functions:
-* kirsch magnitude
-* kirsch direction
+This file contains the following auto threshold functions:
+* basic global threshold
+* otsu threshold
 
 Author: Mark Buttenhoff, Dr. Weiss, Alex Iverson
 Class: CSC442 Digital Image Processing
@@ -13,6 +13,20 @@ Date: Spring 2017
 local il = require "il"
 local math = require "math"
 
+--[[
+Function: basicThreshold
+Author: Mark Buttenhoff
+This function does a basic global threshold on an image.
+It uses the average image intensity to split the image
+into foreground and background groups.
+Then it enters a loop that find the average of
+the pixels in each group respectively, and
+takes the average of those averages. This
+gives a threshold value. This threshold
+is re-calculated using the same steps,
+until the amount of change in the threshold
+is below a predefined parameter (I used 1).
+--]]
 local function basicthreshold(img)
   
   img = il.RGB2YIQ(img)
@@ -28,9 +42,14 @@ local function basicthreshold(img)
       end
   end
   
+  -- initialize previous threshold to something negative to make sure
+  -- initial difference between prev and curr threshold is greater than 1
   local prevthreshold = -256
+  
+  -- initialize current threshold to the global intensity average
   local currthreshold = math.floor(intensitySum/count)
   
+  -- while the threshold change for an iteration is greater than 1
   while((currthreshold - prevthreshold) > 1) do
     
     local group1intensitysum = 0
@@ -38,6 +57,8 @@ local function basicthreshold(img)
     local group1pixelcount = 0
     local group2pixelcount = 0
     
+    
+    -- count all pixels in each class, and average them
     for r = 0,img.height-1 do
         for c = 0,img.width-1 do
           if (img:at(r,c).y > currthreshold) then
@@ -50,12 +71,14 @@ local function basicthreshold(img)
         end
     end
     
+    -- average the two group averages
     local group1average = group1intensitysum/group1pixelcount
     local group2average = group2intensitysum/group2pixelcount
     prevthreshold = currthreshold
     currthreshold = (group1average + group2average)/2
   end  
 
+    -- binarize the image with the threshold found
     img = il.YIQ2RGB(img)
     return img:mapPixels(function( r, g, b )
       local pixelValue = r * .30 + g * .59 + b * .11
@@ -69,7 +92,24 @@ local function basicthreshold(img)
 end
 
 
-
+--[[
+Function: otsuthreshold
+Author: Mark Buttenhoff
+This function first makes a intensity histogram,
+then sums the weight of the intensities in the histogram.
+For every possible intensity in the image(1-256)
+We calculate the between class variance using the following
+equation.
+Background Weight * Foreground Weight * (Background mean - Foreground mean)^2
+The background weight and foreground weights are
+found by summing the values on the left and right
+of the threshold in the histogram respectively.
+The means for each class are calculated by taking
+(sum of intensity values in class * their frequencies / number of pixels in class),
+Once we have the means and weights, we compute the between class variance
+for the current iteration, and save the threshold value on iterations
+where the between class variance is greater than the max between class variance.
+--]]
 local function otsuthreshold(img)
  
   img = il.RGB2YIQ(img)
@@ -119,6 +159,8 @@ local function otsuthreshold(img)
     -- between class variance is product of the two weights and the squared difference between the means
     local betweenClassVariance = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean)^2
     
+    -- if the current between class variance is greater than the max
+    -- set max equal to the current, and set the threshold equal to i
     if(betweenClassVariance > maxVariance) then
       maxVariance = betweenClassVariance
       threshold = i
@@ -128,6 +170,7 @@ local function otsuthreshold(img)
 
   img = il.YIQ2RGB(img)
 
+  -- binarize the image with the threshold found
   return img:mapPixels(function( r, g, b )
     local pixelValue = r * .30 + g * .59 + b * .11 
       if pixelValue > threshold
@@ -140,8 +183,6 @@ local function otsuthreshold(img)
   )
 
 end
-
-
 
 ------------------------------------
 -------- exported routines ---------
